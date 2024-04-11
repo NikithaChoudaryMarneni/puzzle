@@ -4,14 +4,16 @@ import {
   addToReadingList,
   clearSearch,
   getAllBooks,
+  getReadingList,
   ReadingListBook,
+  removeFromReadingList,
   searchBooks
 } from '@tmo/books/data-access';
-import { Book } from '@tmo/shared/models';
+import { Book, ReadingListItem } from '@tmo/shared/models';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
@@ -19,6 +21,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 })
 export class BookSearchComponent implements OnDestroy {
   books$: Observable<ReadingListBook[]> = this.store.select(getAllBooks);
+  itemList: ReadingListItem[];
+  readingList = this.store.select(getReadingList);
   unsubscribe$ = new Subject();
   
   searchForm: FormGroup = this.fb.group({
@@ -27,7 +31,8 @@ export class BookSearchComponent implements OnDestroy {
 
   constructor(
       private readonly store: Store,
-      private readonly fb: FormBuilder
+      private readonly fb: FormBuilder,
+      private snackBar: MatSnackBar
     ) {
       this.searchForm.controls.term.valueChanges.pipe(
         distinctUntilChanged(), 
@@ -36,6 +41,11 @@ export class BookSearchComponent implements OnDestroy {
       ).subscribe(() => {
         this.searchBooks();
       });
+      this.readingList.subscribe(
+        itemList => {
+          this.itemList = itemList;
+        }
+      )
     }
 
   ngOnDestroy(): void {
@@ -49,6 +59,23 @@ export class BookSearchComponent implements OnDestroy {
 
   addBookToReadingList(book: Book) {
     this.store.dispatch(addToReadingList({ book }));
+    this.actionConfirmation(
+      'Adding To reading list ' + book.title,
+      this.removeFromReadingList,
+      this.itemList
+    )
+  }
+
+  removeFromReadingList = (data:ReadingListItem[]) => {
+    const item = data[data.length-1];
+    this.store.dispatch(removeFromReadingList({ item }));
+  }
+  
+  actionConfirmation(msg, func, data) {
+    const snackBarRef = this.snackBar.open(msg, 'Undo');
+    snackBarRef.onAction().subscribe(() => {
+      func(data);
+    });
   }
 
   searchExample() {
