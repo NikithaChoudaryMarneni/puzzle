@@ -6,7 +6,6 @@
 - Improved accessibility by adding descriptive alt text to image tags.
 - Simplified date formatting by utilizing the date pipe feature for book published dates in the book-search component.
 
-
 # Accessibility Issues:
 
 ## With lighthouse extension:
