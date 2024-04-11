@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { addToReadingList, getReadingList, removeFromReadingList, updateFromReadingList } from '@tmo/books/data-access';
+import { addToReadingList, getReadingList, removeFromReadingList } from '@tmo/books/data-access';
 import { Book, ReadingListItem } from '@tmo/shared/models';
 
 @Component({
@@ -24,10 +24,6 @@ export class ReadingListComponent {
       this.addBookToReadingList,
       item
     )
-  }
-
-  updateFromReadingList(item) {
-    this.store.dispatch(updateFromReadingList({ item: {...item, finished: true, finishedDate: new Date().toISOString()} }));
   }
 
   actionConfirmation(msg, func, data) {
